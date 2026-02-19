@@ -96,6 +96,15 @@ open /detail/20
 click .actions button
 ```
 
+## 반복 실행/시각화
+
+- 대시보드 `실행 비교` 패널에서 대상 변형 선택
+- `반복 횟수` 입력 후 `반복 자동 실행` 클릭
+- 실행이 누적되면 시나리오 기준으로 아래 그래프에 자동 집계
+- 점수 산식: `효율 점수 = 성공률(60%) + 속도 점수(40%)`
+  - 성공률: `completed / (completed + failed)`
+  - 속도 점수: `search:input_to_render` 평균값 기준(best 대비 상대 점수)
+
 ## 공통 기능
 
 - 라우트: `/`, `/list`, `/detail/:id`
@@ -110,3 +119,13 @@ click .actions button
 - detail 렌더 완료 시 `mark('detail:rendered')`
 - 검색 반응 측정 `measure('search:input_to_render', ...)`
 - 결과 누적: `window.__APP_METRICS__`
+
+## 스크린샷
+
+### 대시보드 상단 (변형/기능세트/시나리오 관리)
+
+![대시보드 상단](docs/assets/dashboard-top.png)
+
+### 대시보드 하단 (실행 비교/통합 선 그래프/실행 로그)
+
+![대시보드 하단](docs/assets/dashboard-bottom.png)

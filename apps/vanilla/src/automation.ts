@@ -23,6 +23,14 @@ const DEFAULT_TIMEOUT_MS = 6000
 const SEARCH_INPUT_SELECTOR = '#search-input'
 const DEFAULT_STEPS = ['open /list', 'search 상품 20', 'open /detail/20', 'click .actions button']
 
+function normalizeClickSelector(selector: string) {
+  const normalized = selector.trim().toLowerCase()
+  if (normalized === 'add-to-cart' || normalized === 'add_to_cart' || normalized === 'cart') {
+    return '.actions button'
+  }
+  return selector
+}
+
 function sleep(ms: number) {
   return new Promise<void>((resolve) => window.setTimeout(resolve, ms))
 }
@@ -96,7 +104,7 @@ function parseStep(rawStep: string): ParsedStep {
   }
 
   if (cmd === 'click') {
-    const selector = args.join(' ').trim()
+    const selector = normalizeClickSelector(args.join(' ').trim())
     if (!selector) {
       throw new Error('click 단계는 CSS selector가 필요합니다')
     }
