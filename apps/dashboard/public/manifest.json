@@ -1,0 +1,10 @@
+﻿{
+  "id": "dashboard",
+  "name": "FrameBench 대시보드",
+  "tech": ["react", "vite", "tailwind"],
+  "version": "0.1.0",
+  "baseUrl": "http://localhost:3000",
+  "routes": ["/"],
+  "supportedFeatures": ["core", "metrics", "dashboard"],
+  "build": { "commit": "dev", "timestamp": "dev" }
+}

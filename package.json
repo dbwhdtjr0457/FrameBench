@@ -1,0 +1,15 @@
+{
+  "name": "framebench",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.30.0",
+  "scripts": {
+    "dev": "concurrently -n dashboard,vanilla,react-csr -c cyan,green,yellow \"corepack pnpm --filter @framebench/dashboard dev\" \"corepack pnpm --filter @framebench/vanilla dev\" \"corepack pnpm --filter @framebench/react-csr dev\"",
+    "build": "corepack pnpm --filter @framebench/dashboard --filter @framebench/vanilla --filter @framebench/react-csr -r build",
+    "lint": "corepack pnpm --filter @framebench/dashboard --filter @framebench/vanilla --filter @framebench/react-csr -r lint",
+    "preview": "concurrently -n dashboard,vanilla,react-csr -c cyan,green,yellow \"corepack pnpm --filter @framebench/dashboard preview\" \"corepack pnpm --filter @framebench/vanilla preview\" \"corepack pnpm --filter @framebench/react-csr preview\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

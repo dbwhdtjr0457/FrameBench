@@ -1,0 +1,98 @@
+:root {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.4;
+  color: #111827;
+  background: linear-gradient(150deg, #eff6ff, #ecfeff);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+#app {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.panel {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #dbeafe;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.08);
+  padding: 20px;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.toolbar input,
+.toolbar select,
+button {
+  font: inherit;
+  border-radius: 8px;
+  border: 1px solid #bfdbfe;
+  padding: 8px 10px;
+}
+
+button {
+  background: #0ea5e9;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.meta {
+  color: #475569;
+}
+
+.cart {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-radius: 9999px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+}
+
+.item-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.item-list li a {
+  text-decoration: none;
+  color: inherit;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+}

@@ -1,0 +1,10 @@
+﻿{
+  "id": "react-csr",
+  "name": "리액트 CSR",
+  "tech": ["react", "vite", "zustand", "tanstack-query"],
+  "version": "0.1.0",
+  "baseUrl": "http://localhost:3002",
+  "routes": ["/", "/list", "/detail/:id"],
+  "supportedFeatures": ["core", "metrics", "multi-case"],
+  "build": { "commit": "dev", "timestamp": "dev" }
+}

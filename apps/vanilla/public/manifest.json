@@ -1,0 +1,10 @@
+﻿{
+  "id": "vanilla",
+  "name": "바닐라 JS",
+  "tech": ["vanilla", "vite", "typescript"],
+  "version": "0.1.0",
+  "baseUrl": "http://localhost:3001",
+  "routes": ["/", "/list", "/detail/:id"],
+  "supportedFeatures": ["core", "metrics"],
+  "build": { "commit": "dev", "timestamp": "dev" }
+}
