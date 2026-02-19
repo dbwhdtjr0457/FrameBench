@@ -1,44 +1,143 @@
 ﻿# FrameBench
 
-백엔드 없이 운영 가능한 프론트엔드 비교 실험 플랫폼 모노레포입니다.
+백엔드 없이 프론트엔드 구현별 성능 실험을 수행하는 모노레포입니다.
 
 - 관리 콘솔: `apps/dashboard` (React + Vite + Tailwind)
-- 실험 구현: `apps/vanilla`, `apps/react-csr`
+- 비교 대상: `apps/vanilla`, `apps/react-csr`
 - 확장 슬롯: `apps/vue`
 
-## 실행
+## 목표
 
-1. Node.js 20+ 준비
-2. 루트에서 의존성 설치
+- 동일한 UI/기능을 여러 구현으로 유지
+- 대시보드에서 Variant/FeatureSet/Scenario/Run 관리
+- 자동 시나리오 실행으로 성능 지표 비교
+
+## 모노레포 구조
+
+```text
+.
+├─ apps/
+│  ├─ dashboard/   # 관리 콘솔
+│  ├─ vanilla/     # 바닐라 TS + Vite
+│  ├─ react-csr/   # React CSR + case 전환(use-state/zustand/react-query)
+│  └─ vue/         # 확장 자리(스켈레톤)
+├─ docs/
+│  └─ assets/      # README 이미지
+├─ package.json
+└─ pnpm-workspace.yaml
+```
+
+## 요구 환경
+
+- Node.js `20+`
+- pnpm은 `corepack` 경유 사용 권장
+
+## 실행 방법
+
+1. 의존성 설치
 
 ```bash
 corepack pnpm install
 ```
 
-3. 동시 실행
+2. 전체 개발 서버 실행
 
 ```bash
 corepack pnpm dev
 ```
 
-기본 포트:
-- dashboard: `http://localhost:3000`
-- vanilla: `http://localhost:3001`
-- react-csr: `http://localhost:3002` (`?case=use-state|zustand|react-query`)
+3. 빌드/린트
 
-## 아키텍처
+```bash
+corepack pnpm build
+corepack pnpm lint
+```
 
-- 모노레포: `pnpm workspace`
-- 저장소: dashboard의 `localStorage` 단일 키 `framebench:dashboard:v1`
-- 구현 등록: base URL 입력 -> `${url}/manifest.json` 조회/검증 -> 저장
-- 삭제 전략: soft-delete (`deletedAt` 기록, 복구 가능)
-- 기능 세트 기반 호환성 표시: 활성 기능 세트와 `supportedFeatures` 비교
-- 미지원 구현 측정 제외 토글 제공
-- react-csr는 단일 포트에서 쿼리 파라미터 `case`로 라이브러리 케이스 전환
+## 포트
+
+- `dashboard`: `http://localhost:3000`
+- `vanilla`: `http://localhost:3001`
+- `react-csr`: `http://localhost:3002`
+
+React CSR 라이브러리 케이스:
+- `http://localhost:3002/?case=use-state`
+- `http://localhost:3002/?case=zustand`
+- `http://localhost:3002/?case=react-query`
+
+## 현재 구현 범위
+
+- 공통 라우트: `/`, `/list`, `/detail/:id`
+- 데이터: 로컬 JSON 2000개 사용
+- 목록: 검색(250ms 디바운스), 정렬, 카테고리 필터
+- 상세: 장바구니 담기(앱 내부 메모리 상태)
+- 목록 UI 렌더는 가독성/안정성을 위해 상위 200개로 제한
+
+## Dashboard 기능
+
+- Variant 등록/검색/태그 수정/활성 토글
+- Variant soft-delete/복구
+- FeatureSet CRUD + 활성 FeatureSet 선택
+- Scenario CRUD (DSL 스텝 저장)
+- Run 생성/상태 변경/삭제/일괄 초기화
+- JSON Import/Export
+- Variant URL 등록 시 `${baseUrl}/manifest.json` fetch + 스키마 검증
+- 미지원 Feature 표시 및 측정 제외 토글
+- 반복 자동 실행(N회) + 통합 선 그래프 + 요약 점수
+
+## 자동화 실행 모델
+
+- 실행은 큐 기반 순차 처리
+- 생성되는 실행 수: `반복 횟수 × 선택된 변형 수`
+- 각 실행은 iframe 메시지 기반으로 변형 앱에 시나리오 전달
+- 시나리오 길이에 따라 자동 타임아웃 계산
+- 타임아웃 범위: 최소 15초, 최대 180초
+
+## Scenario DSL
+
+- `open /path`
+- `search 키워드`
+- `click CSS선택자`
+- `wait metric 메트릭이름 [timeoutMs]`
+- `wait selector CSS선택자 [timeoutMs]`
+- `sleep ms`
+
+예시:
+
+```text
+open /list
+wait metric list:rendered 10000
+search Item 20
+open /detail/20
+wait metric detail:rendered 10000
+click .actions button
+```
+
+`click` 별칭:
+- `add-to-cart`, `add_to_cart`, `cart` 입력 시 내부적으로 `.actions button`으로 정규화
+
+## Metrics
+
+수집 저장소:
+- `window.__APP_METRICS__`
+
+기본 마크/측정:
+- `performance.mark('app:start')`
+- `mark('list:rendered')`
+- `mark('detail:rendered')`
+- `measure('search:input_to_render', 'search:input', 'search:rendered')`
+
+대시보드의 `메트릭 n개`:
+- 해당 run에서 수집된 `mark + measure` 이벤트 총개수
+
+## 점수 계산
+
+- 성공률: `completed / (completed + failed)`
+- 속도 점수: 평균 `search:input_to_render`를 best 대비 상대 점수로 환산
+- 효율 점수: `성공률(60%) + 속도 점수(40%)`
 
 ## Manifest 스키마
 
-각 구현 앱은 빌드 산출물 루트에서 `GET /manifest.json` 제공:
+각 앱은 `GET /manifest.json` 제공:
 
 ```json
 {
@@ -53,16 +152,27 @@ corepack pnpm dev
 }
 ```
 
-## 대시보드 데이터 모델
+검증 규칙:
+- 필수 메타 필드 존재
+- `tech/routes/supportedFeatures` 문자열 배열
+- `routes`에 `/, /list, /detail/:id` 포함
+- `build.commit`, `build.timestamp` 문자열
+
+## Dashboard 저장 모델
+
+localStorage 키:
+- `framebench:dashboard:v1`
+
+타입:
 
 ```ts
 Variant: id, name, baseUrl, manifestUrl, enabled, deletedAt?, tags[], supportedFeatures?
 FeatureSet: id, name, features[]
 Scenario: id, name, steps[], requiredFeatures[]
-RunRecord(스켈레톤): id, scenarioId, variantId, startedAt, endedAt?, status, notes?
+RunRecord: id, scenarioId, variantId, startedAt, endedAt?, status, notes?, metrics?, error?
 ```
 
-## 가져오기/내보내기 포맷
+Import/Export 포맷:
 
 ```json
 {
@@ -78,47 +188,11 @@ RunRecord(스켈레톤): id, scenarioId, variantId, startedAt, endedAt?, status,
 }
 ```
 
-## 자동화 시나리오 단계 문법
+## Seed 데이터 동작
 
-- `open /path`
-- `search 키워드`
-- `click CSS선택자`
-- `wait metric 메트릭이름 [timeoutMs]`
-- `wait selector CSS선택자 [timeoutMs]`
-- `sleep ms`
-
-예시:
-
-```text
-open /list
-search 상품 20
-open /detail/20
-click .actions button
-```
-
-## 반복 실행/시각화
-
-- 대시보드 `실행 비교` 패널에서 대상 변형 선택
-- `반복 횟수` 입력 후 `반복 자동 실행` 클릭
-- 실행이 누적되면 시나리오 기준으로 아래 그래프에 자동 집계
-- 점수 산식: `효율 점수 = 성공률(60%) + 속도 점수(40%)`
-  - 성공률: `completed / (completed + failed)`
-  - 속도 점수: `search:input_to_render` 평균값 기준(best 대비 상대 점수)
-
-## 공통 기능
-
-- 라우트: `/`, `/list`, `/detail/:id`
-- `/list`: 로컬 JSON 2000개 아이템, 검색(디바운스), 정렬, 카테고리 필터
-- `/detail/:id`: 상세 정보, 장바구니 담기(앱 내부 메모리 상태)
-
-## Metrics 훅
-
-각 구현 앱 공통:
-- `performance.mark('app:start')`
-- list 렌더 완료 시 `mark('list:rendered')`
-- detail 렌더 완료 시 `mark('detail:rendered')`
-- 검색 반응 측정 `measure('search:input_to_render', ...)`
-- 결과 누적: `window.__APP_METRICS__`
+- 최초 실행 시 localhost 기본 변형/기능세트/시나리오를 seed로 생성
+- 저장 데이터 로드시 seed ID가 누락되어 있으면 자동으로 다시 추가
+- 따라서 seed 항목은 soft-delete해도 이후 다시 보일 수 있음
 
 ## 스크린샷
 
